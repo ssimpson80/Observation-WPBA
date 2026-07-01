@@ -12,7 +12,7 @@
   Then replace the script src below with:
   xlsx.full.min.js</script>
 -->
-<script src="https://cdn.sheetjs.com/"/script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
 <style>
 :root {
@@ -1694,8 +1694,8 @@ function renderComments() {
     <li>
       <b>${escapeHtml(d.Trainee)}</b>
       (${escapeHtml(d["Rotation / Service"])}, ${escapeHtml(d.Modality)}):
-      “${escapeHtml(d["Critical Miss / Issue Comment"])}”
-      ${d["Reflection / Action Plan"] ? `— reflection: “${escapeHtml(d["Reflection / Action Plan"])}”` : ""}
+      "${escapeHtml(d["Critical Miss / Issue Comment"])}"
+      ${d["Reflection / Action Plan"] ? `— reflection: "${escapeHtml(d["Reflection / Action Plan"])}"` : ""}
     </li>
   `).join("") || "<li>No documented miss examples in the filtered data.</li>";
 
