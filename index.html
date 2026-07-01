@@ -767,13 +767,23 @@ function normalizeColumnName(s) {
 }
 
 function extractRating(text) {
-  const s = String(text || "").toLowerCase();
-
-  if (s.includes("novice")) return "Novice";
-  if (s.includes("developing")) return "Developing";
-  if (s.includes("competent")) return "Competent";
-  if (s.includes("excellence")) return "Excellence";
-  if (s.includes("n/a") || s.trim() === "na") return "N/A";
+  const s = String(text || "").trim();
+  
+  // Check for exact matches first (case-insensitive)
+  const lowerS = s.toLowerCase();
+  
+  if (lowerS === "novice" || s === "Novice") return "Novice";
+  if (lowerS === "developing" || s === "Developing") return "Developing";
+  if (lowerS === "competent" || s === "Competent") return "Competent";
+  if (lowerS === "excellence" || s === "Excellence") return "Excellence";
+  if (lowerS === "na" || lowerS === "n/a" || s === "NA") return "N/A";
+  
+  // If no exact match, try substring matching (for partial text)
+  if (lowerS.includes("novice")) return "Novice";
+  if (lowerS.includes("developing")) return "Developing";
+  if (lowerS.includes("competent")) return "Competent";
+  if (lowerS.includes("excellence")) return "Excellence";
+  if (lowerS.includes("n/a") || lowerS.includes("na")) return "N/A";
 
   return "Unknown";
 }
