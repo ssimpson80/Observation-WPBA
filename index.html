@@ -705,7 +705,7 @@ function normalizeMicrosoftFormRow(row, index) {
   const clinicalScore = ratingToScore(clinicalRating);
   const incidentalScore = ratingToScore(incidentalRating);
 
-  const scorableScores = [clinicalScore, incidentalScore].filter(x => x !== "");
+  const scorableScores = [clinicalScore, incidentalScore].filter(x => x !== "" && x !== undefined);
   const averageScore = scorableScores.length
     ? scorableScores.reduce((a, b) => a + b, 0) / scorableScores.length
     : "";
@@ -769,9 +769,12 @@ function normalizeColumnName(s) {
 function extractRating(text) {
   const s = String(text || "").trim();
   
-  // Check for exact matches first (case-insensitive)
+  // Return empty string for blank/empty cells - they should be skipped, not counted as Unknown
+  if (!s || s === "") return "";
+  
   const lowerS = s.toLowerCase();
   
+  // Check for exact matches first (case-insensitive)
   if (lowerS === "novice" || s === "Novice") return "Novice";
   if (lowerS === "developing" || s === "Developing") return "Developing";
   if (lowerS === "competent" || s === "Competent") return "Competent";
@@ -785,7 +788,8 @@ function extractRating(text) {
   if (lowerS.includes("excellence")) return "Excellence";
   if (lowerS.includes("n/a") || lowerS.includes("na")) return "N/A";
 
-  return "Unknown";
+  // Return empty string instead of Unknown for unrecognized values
+  return "";
 }
 
 function ratingToScore(rating) {
@@ -989,10 +993,10 @@ function splitMods(s) {
 }
 
 function ratingsOf(d) {
-  return [
-    d["Clinical Question Rating"] || "Unknown",
-    d["Incidental Findings Rating"] || "Unknown"
-  ];
+  const ratings = [];
+  if (d["Clinical Question Rating"]) ratings.push(d["Clinical Question Rating"]);
+  if (d["Incidental Findings Rating"]) ratings.push(d["Incidental Findings Rating"]);
+  return ratings.length > 0 ? ratings : [];
 }
 
 function scoreVals(ds) {
@@ -1025,7 +1029,9 @@ function countRatings(ds) {
 
   ds.forEach(d => {
     ratingsOf(d).forEach(r => {
-      counts[counts.hasOwnProperty(r) ? r : "Unknown"]++;
+      if (r && counts.hasOwnProperty(r)) {
+        counts[r]++;
+      }
     });
   });
 
@@ -1059,7 +1065,7 @@ function initFilters() {
     let opts = [];
 
     if (id === "rating") {
-      opts = CONFIG.ratingsAll;
+      opts = CONFIG.ratingsAll.filter(r => r !== "Unknown");
     } else if (id === "modality") {
       opts = CONFIG.modalitiesAll;
     } else if (id === "rotation") {
@@ -1197,7 +1203,7 @@ function ratingTable(counts) {
         <th>Obs</th>
         <th>%</th>
       </tr>
-      ${CONFIG.ratingsAll.map(r => `
+      ${CONFIG.ratingsAll.filter(r => r !== "Unknown").map(r => `
         <tr>
           <td><span class="legendDot" style="background:${ratingColors[r]}"></span>${r}</td>
           <td>${counts[r] || 0}</td>
@@ -1235,7 +1241,7 @@ function stacked(label, counts) {
   return `
     <b>${label}</b>
     <div class="stack">
-      ${CONFIG.ratingsAll.map(r => {
+      ${CONFIG.ratingsAll.filter(r => r !== "Unknown").map(r => {
         const w = (counts[r] || 0) / total * 100;
         if (!w) return "";
         return `
