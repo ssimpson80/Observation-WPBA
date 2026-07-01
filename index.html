@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Observation WPBA Dashboard</title>
+
+<!--
+  SheetJS reads Excel/CSV files in the browser.
+  For a fully self-contained/offline version, download this file:
+  https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js
+  Then replace the script src below with:
+  xlsx.full.min.js</script>
+-->
+<script src="https://cdn.sheetjs.com/"/script>
+
+<style>
+:root {
+  --blue: #0f4c81;
+  --blue2: #2563a6;
+  --light: #f5f7fb;
+  --line: #d9e1ec;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --red: #d9534f;
+  --orange: #f0ad4e;
+  --green: #2e8b57;
+  --pink: #e78ab0;
+  --purple: #7c5cc4;
+  --gray: #9ca3af;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background: #ffffff;
+}
+
+header {
+  background: linear-gradient(90deg, var(--blue), var(--blue2));
+  color: white;
+  padding: 18px 24px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+header p {
+  margin: 6px 0 0;
+  opacity: 0.9;
+}
+
+.wrap {
+  padding: 18px 24px 36px;
+}
+
+.upload-panel,
+.section {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  background: white;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.upload-panel {
+  background: #f8fafc;
+}
+
+.upload-panel h2,
+.section h2,
+.section h3 {
+  margin-top: 0;
+}
+
+.drop-zone {
+  border: 2px dashed #9ca3af;
+  border-radius: 12px;
+  background: white;
+  padding: 26px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.drop-zone.dragover {
+  border-color: var(--blue);
+  background: #eef6ff;
+}
+
+.file-status {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+button,
+.btn {
+  border: 1px solid var(--line);
+  background: white;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover,
+.btn:hover {
+  background: #f3f6fa;
+}
+
+.primary {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
+
+.primary:hover {
+  background: #0b3b66;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: 10px;
+  background: var(--light);
+  border: 1px solid var(--line);
+  padding: 14px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.filter label {
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.filter select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #c8d2df;
+  border-radius: 6px;
+  background: white;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+
+.tabbtn {
+  border: 1px solid var(--line);
+  background: white;
+  padding: 9px 12px;
+  border-radius: 8px;
+}
+
+.tabbtn.active {
+  background: var(--blue);
+  color: white;
+}
+
+.tab {
+  display: none;
+}
+
+.tab.active {
+  display: block;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 13px;
+  background: white;
+}
+
+.card .label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: bold;
+}
+
+.card .value {
+  font-size: 25px;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.card .small {
+  margin-top: 4px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(340px, 1.2fr);
+  gap: 14px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+
+th,
+td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 7px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: #f3f6fa;
+  font-weight: bold;
+}
+
+.progress {
+  height: 16px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  min-width: 90px;
+}
+
+.progbar {
+  height: 100%;
+  color: white;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.red {
+  background: var(--red);
+}
+
+.orange {
+  background: var(--orange);
+}
+
+.green {
+  background: var(--green);
+}
+
+.small {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.miss {
+  color: #b91c1c;
+  font-weight: bold;
+}
+
+.ok {
+  color: #166534;
+}
+
+.pieWrap {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.legendDot {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.stack {
+  height: 26px;
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e5e7eb;
+  margin: 6px 0 14px;
+}
+
+.seg {
+  height: 100%;
+  color: white;
+  font-size: 11px;
+  line-height: 26px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.barrow {
+  display: grid;
+  grid-template-columns: 230px 1fr 60px;
+  gap: 8px;
+  align-items: center;
+  margin: 7px 0;
+}
+
+.barbg {
+  height: 20px;
+  background: #edf2f7;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barfill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.summary {
+  line-height: 1.45;
+}
+
+@media(max-width: 850px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  .barrow {
+    grid-template-columns: 130px 1fr 45px;
+  }
+
+  .wrap {
+    padding: 12px;
+  }
+
+  table {
+    font-size: 12px;
+  }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <h1>Penn Medicine | Radiology Observation WPBA Dashboard</h1>
+  <p>Static browser-based dashboard for Microsoft Forms WPBA exports. Spreadsheet data is processed locally in the browser.</p>
+</header>
+
+<div class="wrap">
+
+  <section class="upload-panel">
+    <h2>Load WPBA Spreadsheet</h2>
+    <p>
+      Drag and drop the Microsoft Forms Excel/CSV export here, or choose a file.
+      Accepted file types: <strong>.xlsx, .xls, .csv</strong>.
+    </p>
+
+    <div id="dropZone" class="drop-zone">
+      <strong>Drop spreadsheet here</strong>
+      <br />
+      <span class="small">or click to choose a file</span>
+      <br /><br />
+      <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" />
+    </div>
+
+    <div id="fileStatus" class="file-status">
+      No spreadsheet loaded.
+    </div>
+
+    <div class="actions">
+      <button class="primary" onclick="loadDemoData()">Load small synthetic demo</button>
+      <button onclick="downloadAssessmentCSV()">Download assessment CSV</button>
+      <button onclick="downloadLongCSV()">Download long CSV</button>
+      <button onclick="clearData()">Clear loaded data</button>
+    </div>
+  </section>
+
+  <div class="filters" id="filters"></div>
+
+  <div class="tabs">
+    <button class="tabbtn active" data-tab="trainee">Trainee</button>
+    <button class="tabbtn" data-tab="program">Program</button>
+    <button class="tabbtn" data-tab="rotation">Rotation / Service</button>
+    <button class="tabbtn" data-tab="modality">Modality</button>
+    <button class="tabbtn" data-tab="comments">Comments &amp; Reflections</button>
+  </div>
+
+  <div id="trainee" class="tab active"></div>
+  <div id="program" class="tab"></div>
+  <div id="rotation" class="tab"></div>
+  <div id="modality" class="tab"></div>
+  <div id="comments" class="tab"></div>
+
+</div>
+
+<script>
+let assessments = [];
+let rawFormRows = [];
+
+const CONFIG = {
+  ratingsAll: [
+    "Novice",
+    "Developing",
+    "Competent",
+    "Excellence",
+    "N/A",
+    "Unknown"
+  ],
+  modalitiesAll: [
+    "X-Ray or Planar",
+    "CT or PET/CT",
+    "MRI",
+    "US",
+    "Fluoro"
+  ],
+  rotationsAll: [
+    "Abdominal imaging",
+    "Breast",
+    "Cardiothoracic (Chest, CVI)",
+    "Interventional Radiology",
+    "Musculoskeletal",
+    "Neuroradiology",
+    "Nuclear Medicine",
+    "Pediatrics",
+    "Emergency (Call or after hours)"
+  ],
+  weeksAll: [
+    "<2 weeks",
+    "2-4 weeks",
+    "4-6 weeks",
+    "4-8 weeks",
+    "8-12 weeks",
+    ">12 weeks"
+  ]
+};
+
+const ratingColors = {
+  "Novice": "#d9534f",
+  "Developing": "#f0ad4e",
+  "Competent": "#2e8b57",
+  "Excellence": "#1f77b4",
+  "N/A": "#9ca3af",
+  "Unknown": "#6b7280"
+};
+
+const bodyColors = {
+  "Body": "#2e8b57",
+  "Neuro / Head & Neck": "#1f77b4",
+  "Cardiothoracic": "#d9534f",
+  "Bones / MSK": "#f0ad4e",
+  "Nuclear Medicine / Molecular": "#7c5cc4",
+  "Other / Unclear": "#6b7280",
+  "No documented miss": "#9ca3af"
+};
+
+const scoreMap = {
+  "Novice": 1,
+  "Developing": 2,
+  "Competent": 3,
+  "Excellence": 4
+};
+
+const filterDefs = [
+  ["trainee", "Trainee", "Trainee"],
+  ["ay", "Academic Year", "Academic Year"],
+  ["rotation", "Rotation / Service", "Rotation / Service"],
+  ["modality", "Modality", "Modality"],
+  ["faculty", "Faculty Assessor", "Faculty Assessor"],
+  ["weeks", "Weeks Experience", "Weeks Experience"],
+  ["rating", "Rating Category", null],
+  ["miss", "Documented Miss Flag", "Critical Miss Flag"]
+];
+
+const demoAssessments = [
+  {
+    "Assessment ID": 1,
+    "Trainee": "Demo, A",
+    "Faculty Assessor": "Faculty Demo",
+    "Rotation / Service": "Cardiothoracic (Chest, CVI)",
+    "Weeks Experience": "4-6 weeks",
+    "Weeks (Midpoint)": 5,
+    "Modality": "CT or PET/CT",
+    "Academic Year": "AY 2025-2026",
+    "Submission Date": "2026-06-01",
+    "Submission Month": "Jun 2026",
+    "Clinical Question Rating": "Competent",
+    "Clinical Question Score": 3,
+    "Incidental Findings Rating": "Developing",
+    "Incidental Findings Score": 2,
+    "Average Score": 2.5,
+    "Critical Miss Flag": "No documented critical / obvious miss",
+    "Documented Miss (1/0)": 0,
+    "Body Region": "No documented miss",
+    "Critical Miss / Issue Comment": "",
+    "Reflection / Action Plan": "Synthetic demo reflection."
+  },
+  {
+    "Assessment ID": 2,
+    "Trainee": "Demo, B",
+    "Faculty Assessor": "Faculty Demo",
+    "Rotation / Service": "Neuroradiology",
+    "Weeks Experience": "8-12 weeks",
+    "Weeks (Midpoint)": 10,
+    "Modality": "MRI",
+    "Academic Year": "AY 2025-2026",
+    "Submission Date": "2026-06-15",
+    "Submission Month": "Jun 2026",
+    "Clinical Question Rating": "Excellence",
+    "Clinical Question Score": 4,
+    "Incidental Findings Rating": "Competent",
+    "Incidental Findings Score": 3,
+    "Average Score": 3.5,
+    "Critical Miss Flag": "Documented miss / issue",
+    "Documented Miss (1/0)": 1,
+    "Body Region": "Neuro / Head & Neck",
+    "Critical Miss / Issue Comment": "Synthetic example: missed small brain lesion.",
+    "Reflection / Action Plan": "Synthetic demo action plan."
+  }
+];
+
+function setupTabs() {
+  document.querySelectorAll(".tabbtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-tab");
+
+      document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    });
+  });
+}
+
+function setupFileUpload() {
+  const dropZone = document.getElementById("dropZone");
+  const fileInput = document.getElementById("fileInput");
+
+  dropZone.addEventListener("click", () => fileInput.click());
+
+  fileInput.addEventListener("change", event => {
+    const file = event.target.files[0];
+    if (file) handleSpreadsheetFile(file);
+  });
+
+  dropZone.addEventListener("dragover", event => {
+    event.preventDefault();
+    dropZone.classList.add("dragover");
+  });
+
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("dragover");
+  });
+
+  dropZone.addEventListener("drop", event => {
+    event.preventDefault();
+    dropZone.classList.remove("dragover");
+
+    const file = event.dataTransfer.files[0];
+    if (file) handleSpreadsheetFile(file);
+  });
+}
+
+function setStatus(message) {
+  document.getElementById("fileStatus").textContent = message;
+}
+
+function handleSpreadsheetFile(file) {
+  const reader = new FileReader();
+
+  reader.onload = function(event) {
+    try {
+      const data = new Uint8Array(event.target.result);
+
+      const workbook = XLSX.read(data, {
+        type: "array",
+        cellDates: true
+      });
+
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+
+      const rows = XLSX.utils.sheet_to_json(worksheet, {
+        defval: "",
+        raw: false
+      });
+
+      rawFormRows = rows;
+      assessments = rows.map(normalizeMicrosoftFormRow);
+
+      validateLoadedData(assessments);
+      rebuildFilterOptions();
+      renderAll();
+
+      setStatus(`Loaded ${assessments.length} WPBA forms from "${file.name}".`);
+    } catch (error) {
+      console.error(error);
+      setStatus("Could not read this spreadsheet. Please confirm it is a Microsoft Forms WPBA export.");
+    }
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+function normalizeMicrosoftFormRow(row, index) {
+  const startTime = valueFromPossibleColumns(row, [
+    "Start time",
+    "Submission/start time",
+    "Submission Date",
+    "Completion time"
+  ]);
+
+  const trainee = valueFromPossibleColumns(row, [
+    "Trainees Name (last name, first initial e.g. Smith, J).",
+    "Trainees Name last name first initial eg Smith J",
+    "Trainee name",
+    "Trainee",
+    "Name"
+  ]);
+
+  const faculty = valueFromPossibleColumns(row, [
+    "Last name of faculty member performing assessment.",
+    "Faculty assessor",
+    "Faculty Assessor"
+  ]);
+
+  const rotation = standardizeRotation(
+    valueFromPossibleColumns(row, [
+      "Which radiology rotation are you on?",
+      "Rotation/service",
+      "Rotation / Service",
+      "Rotation"
+    ])
+  );
+
+  const weeks = standardizeWeeks(
+    valueFromPossibleColumns(row, [
+      "How many weeks of experience (including all prior rotations) have you had on this service.",
+      "How many weeks of experience including all prior rotations have you had on this service",
+      "Weeks of experience",
+      "Weeks Experience"
+    ])
+  );
+
+  const modality = standardizeModalities(
+    valueFromPossibleColumns(row, [
+      "Which modality or modalities were assessed (you may select more than one)?",
+      "Which modality or modalities were assessed you may select more than one",
+      "Imaging modality/modalities",
+      "Modality"
+    ])
+  );
+
+  const clinicalRatingRaw = valueFromPossibleColumns(row, [
+    "Findings relevant to the clinical question: Identified nearly all findings relevant to the clinical question.",
+    "Findings relevant to the clinical question Identified nearly all findings relevant to the clinical question",
+    "Findings relevant to clinical question rating",
+    "Clinical Question Rating"
+  ]);
+
+  const incidentalRatingRaw = valueFromPossibleColumns(row, [
+    "Incidental findings: Identified nearly all incidental findings expected of a general radiologist.",
+    "Incidental findings Identified nearly all incidental findings expected of a general radiologist",
+    "Incidental findings rating",
+    "Incidental Findings Rating"
+  ]);
+
+  const missText = valueFromPossibleColumns(row, [
+    "If critical or large/obvious findings were missed, please share the miss(es) and modality (e.g. incidental 5 cm adrenal adenoma on Chest CT):",
+    "If critical or large obvious findings were missed please share the misses and modality eg incidental 5 cm adrenal adenoma on Chest CT",
+    "Critical/large/obvious miss free-text field",
+    "Critical Miss / Issue Comment"
+  ]);
+
+  const reflection = valueFromPossibleColumns(row, [
+    "Trainee reflection and action plan",
+    "Trainee reflection/action plan",
+    "Reflection / Action Plan"
+  ]);
+
+  const clinicalRating = extractRating(clinicalRatingRaw);
+  const incidentalRating = extractRating(incidentalRatingRaw);
+
+  const clinicalScore = ratingToScore(clinicalRating);
+  const incidentalScore = ratingToScore(incidentalRating);
+
+  const scorableScores = [clinicalScore, incidentalScore].filter(x => x !== "");
+  const averageScore = scorableScores.length
+    ? scorableScores.reduce((a, b) => a + b, 0) / scorableScores.length
+    : "";
+
+  const missBinary = classifyMiss(missText);
+  const missFlag = missBinary
+    ? "Documented miss / issue"
+    : "No documented critical / obvious miss";
+
+  return {
+    "Assessment ID": index + 1,
+    "Trainee": trainee || "Unknown trainee",
+    "Faculty Assessor": faculty || "Unknown faculty",
+    "Rotation / Service": rotation || "Unknown",
+    "Weeks Experience": weeks || "Unknown",
+    "Weeks (Midpoint)": weeksMidpoint(weeks),
+    "Modality": modality || "Unknown",
+    "Academic Year": academicYear(startTime),
+    "Submission Date": formatDate(startTime),
+    "Submission Month": formatMonth(startTime),
+    "Clinical Question Rating": clinicalRating,
+    "Clinical Question Score": clinicalScore,
+    "Incidental Findings Rating": incidentalRating,
+    "Incidental Findings Score": incidentalScore,
+    "Average Score": averageScore,
+    "Critical Miss Flag": missFlag,
+    "Documented Miss (1/0)": missBinary,
+    "Body Region": classifyBodyRegion(missText, modality, rotation),
+    "Critical Miss / Issue Comment": missText || "",
+    "Reflection / Action Plan": reflection || ""
+  };
+}
+
+function valueFromPossibleColumns(row, possibleNames) {
+  const keys = Object.keys(row);
+
+  for (const desired of possibleNames) {
+    const exact = keys.find(k => String(k).trim() === String(desired).trim());
+    if (exact) return row[exact];
+  }
+
+  const normalizedDesired = possibleNames.map(normalizeColumnName);
+
+  const fuzzy = keys.find(k => {
+    const nk = normalizeColumnName(k);
+    return normalizedDesired.some(d => nk.includes(d) || d.includes(nk));
+  });
+
+  return fuzzy ? row[fuzzy] : "";
+}
+
+function normalizeColumnName(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/[^\w\s]/g, "")
+    .trim();
+}
+
+function extractRating(text) {
+  const s = String(text || "").toLowerCase();
+
+  if (s.includes("novice")) return "Novice";
+  if (s.includes("developing")) return "Developing";
+  if (s.includes("competent")) return "Competent";
+  if (s.includes("excellence")) return "Excellence";
+  if (s.includes("n/a") || s.trim() === "na") return "N/A";
+
+  return "Unknown";
+}
+
+function ratingToScore(rating) {
+  return scoreMap[rating] || "";
+}
+
+function classifyMiss(text) {
+  const s = String(text || "").trim().toLowerCase();
+
+  if (!s) return 0;
+
+  const negativePatterns = [
+    /^none$/,
+    /^no$/,
+    /^n\/a$/,
+    /^na$/,
+    /^nil$/,
+    /^nothing$/,
+    /^no miss/,
+    /^no critical/,
+    /^no obvious/,
+    /^nada/
+  ];
+
+  if (negativePatterns.some(rx => rx.test(s))) return 0;
+
+  return 1;
+}
+
+function classifyBodyRegion(text, modality, rotation) {
+  if (!classifyMiss(text)) return "No documented miss";
+
+  const s = `${text || ""} ${modality || ""} ${rotation || ""}`.toLowerCase();
+
+  if (/adrenal|abdomen|abdominal|liver|kidney|renal|pancreas|spleen|bowel|pelvis|appendix|colon|gallbladder/.test(s)) {
+    return "Body";
+  }
+
+  if (/brain|head|neck|neuro|spine|spinal|cord|stroke|intracranial|cervical|lumbar/.test(s)) {
+    return "Neuro / Head & Neck";
+  }
+
+  if (/chest|lung|cardiothoracic|heart|aorta|pulmonary|mediast|coronary|cvi/.test(s)) {
+    return "Cardiothoracic";
+  }
+
+  if (/bone|msk|fracture|joint|extremity|x-ray|xray|planar|musculoskeletal|shoulder|knee|hip|ankle|wrist/.test(s)) {
+    return "Bones / MSK";
+  }
+
+  if (/nuclear|pet|molecular/.test(s)) {
+    return "Nuclear Medicine / Molecular";
+  }
+
+  return "Other / Unclear";
+}
+
+function parseDateMaybe(value) {
+  if (!value) return null;
+
+  if (value instanceof Date && !isNaN(value.getTime())) return value;
+
+  if (typeof value === "number") {
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+    return new Date(excelEpoch.getTime() + value * 86400000);
+  }
+
+  const s = String(value).trim();
+
+  if (/^\d+(\.\d+)?$/.test(s)) {
+    const n = Number(s);
+    if (n > 20000 && n < 90000) {
+      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+      return new Date(excelEpoch.getTime() + n * 86400000);
+    }
+  }
+
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return d;
+
+  return null;
+}
+
+function academicYear(value) {
+  const d = parseDateMaybe(value);
+  if (!d) return "Unknown";
+
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+
+  if (month >= 7) {
+    return `AY ${year}-${year + 1}`;
+  }
+
+  return `AY ${year - 1}-${year}`;
+}
+
+function currentAcademicYear() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+
+  if (m >= 7) return `AY ${y}-${y + 1}`;
+  return `AY ${y - 1}-${y}`;
+}
+
+function formatDate(value) {
+  const d = parseDateMaybe(value);
+  if (!d) return "";
+
+  return d.toISOString().slice(0, 10);
+}
+
+function formatMonth(value) {
+  const d = parseDateMaybe(value);
+  if (!d) return "";
+
+  return d.toLocaleString("en-US", {
+    month: "short",
+    year: "numeric"
+  });
+}
+
+function standardizeRotation(value) {
+  const s = String(value || "").trim();
+
+  const map = {
+    "Emergency, Call, or After hours": "Emergency (Call or after hours)",
+    "Emergency, Call, or After Hours": "Emergency (Call or after hours)",
+    "Emergency (Call or after hours)": "Emergency (Call or after hours)",
+    "Cardiothoracic": "Cardiothoracic (Chest, CVI)",
+    "Chest": "Cardiothoracic (Chest, CVI)",
+    "CVI": "Cardiothoracic (Chest, CVI)"
+  };
+
+  return map[s] || s;
+}
+
+function standardizeWeeks(value) {
+  return String(value || "")
+    .replace("\\<", "<")
+    .replace("\\>", ">")
+    .replace("&lt;", "<")
+    .replace("&gt;", ">")
+    .trim();
+}
+
+function standardizeModalities(value) {
+  const s = String(value || "")
+    .replace(/,/g, ";")
+    .split(";")
+    .map(x => x.trim())
+    .filter(Boolean)
+    .map(x => {
+      if (/x.?ray|planar/i.test(x)) return "X-Ray or Planar";
+      if (/ct|pet/i.test(x)) return "CT or PET/CT";
+      if (/mri/i.test(x)) return "MRI";
+      if (/us|ultrasound/i.test(x)) return "US";
+      if (/fluoro/i.test(x)) return "Fluoro";
+      return x;
+    });
+
+  return [...new Set(s)].join("; ");
+}
+
+function weeksMidpoint(weeks) {
+  const map = {
+    "<2 weeks": 1,
+    "2-4 weeks": 3,
+    "4-6 weeks": 5,
+    "4-8 weeks": 6,
+    "6-8 weeks": 7,
+    "8-12 weeks": 10,
+    ">12 weeks": 13
+  };
+
+  return map[weeks] || "";
+}
+
+function validateLoadedData(rows) {
+  if (!rows.length) {
+    throw new Error("No rows found.");
+  }
+
+  const missingTrainees = rows.filter(r => !r.Trainee || r.Trainee === "Unknown trainee").length;
+
+  if (missingTrainees === rows.length) {
+    setStatus("Spreadsheet loaded, but trainee names were not detected. Check that the Form column names match the expected WPBA export.");
+  }
+}
+
+function uniq(arr) {
+  return [...new Set(arr.filter(x => x !== undefined && x !== null && String(x).trim() !== ""))].sort();
+}
+
+function splitMods(s) {
+  return String(s || "")
+    .split(";")
+    .map(x => x.trim())
+    .filter(Boolean);
+}
+
+function ratingsOf(d) {
+  return [
+    d["Clinical Question Rating"] || "Unknown",
+    d["Incidental Findings Rating"] || "Unknown"
+  ];
+}
+
+function scoreVals(ds) {
+  const out = [];
+
+  ds.forEach(d => {
+    ratingsOf(d).forEach(r => {
+      if (scoreMap[r]) out.push(scoreMap[r]);
+    });
+  });
+
+  return out;
+}
+
+function avg(arr) {
+  return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : NaN;
+}
+
+function fmt(n, digits = 1) {
+  return isFinite(n) ? Number(n).toFixed(digits) : "—";
+}
+
+function pct(n, digits = 0) {
+  return isFinite(n) ? `${(n * 100).toFixed(digits)}%` : "—";
+}
+
+function countRatings(ds) {
+  const counts = {};
+  CONFIG.ratingsAll.forEach(r => counts[r] = 0);
+
+  ds.forEach(d => {
+    ratingsOf(d).forEach(r => {
+      counts[counts.hasOwnProperty(r) ? r : "Unknown"]++;
+    });
+  });
+
+  return counts;
+}
+
+function selected(id) {
+  const el = document.getElementById(`f_${id}`);
+  return el ? el.value : "All";
+}
+
+function currentData(ignoreTrainee = false) {
+  return assessments.filter(d => {
+    if (!ignoreTrainee && selected("trainee") !== "All" && d.Trainee !== selected("trainee")) return false;
+    if (selected("ay") !== "All" && d["Academic Year"] !== selected("ay")) return false;
+    if (selected("rotation") !== "All" && d["Rotation / Service"] !== selected("rotation")) return false;
+    if (selected("modality") !== "All" && !splitMods(d.Modality).includes(selected("modality"))) return false;
+    if (selected("faculty") !== "All" && d["Faculty Assessor"] !== selected("faculty")) return false;
+    if (selected("weeks") !== "All" && d["Weeks Experience"] !== selected("weeks")) return false;
+    if (selected("miss") !== "All" && d["Critical Miss Flag"] !== selected("miss")) return false;
+    if (selected("rating") !== "All" && !ratingsOf(d).includes(selected("rating"))) return false;
+
+    return true;
+  });
+}
+
+function initFilters() {
+  let html = "";
+
+  filterDefs.forEach(([id, label, col]) => {
+    let opts = [];
+
+    if (id === "rating") {
+      opts = CONFIG.ratingsAll;
+    } else if (id === "modality") {
+      opts = CONFIG.modalitiesAll;
+    } else if (id === "rotation") {
+      opts = CONFIG.rotationsAll;
+    } else if (id === "weeks") {
+      opts = CONFIG.weeksAll;
+    } else if (id === "miss") {
+      opts = [
+        "No documented critical / obvious miss",
+        "Documented miss / issue"
+      ];
+    } else {
+      opts = uniq(assessments.map(d => d[col]));
+    }
+
+    let defaultVal = "All";
+
+    if (id === "ay") {
+      const currentAY = currentAcademicYear();
+      if (opts.includes(currentAY)) {
+        defaultVal = currentAY;
+      } else if (opts.length === 1) {
+        defaultVal = opts[0];
+      }
+    }
+
+    html += `
+      <div class="filter">
+        <label>${label}</label>
+        <select id="f_${id}" onchange="renderAll()">
+          <option>All</option>
+          ${opts.map(o => `<option ${o === defaultVal ? "selected" : ""}>${escapeHtml(o)}</option>`).join("")}
+        </select>
+      </div>
+    `;
+  });
+
+  document.getElementById("filters").innerHTML = html;
+}
+
+function rebuildFilterOptions() {
+  const activeValues = {};
+
+  document.querySelectorAll("select[id^='f_']").forEach(sel => {
+    activeValues[sel.id] = sel.value;
+  });
+
+  initFilters();
+
+  Object.entries(activeValues).forEach(([id, value]) => {
+    const sel = document.getElementById(id);
+    if (sel && [...sel.options].some(o => o.value === value)) {
+      sel.value = value;
+    }
+  });
+}
+
+function cards(items) {
+  return `
+    <div class="cards">
+      ${items.map(x => `
+        <div class="card">
+          <div class="label">${x[0]}</div>
+          <div class="value">${x[1]}</div>
+          ${x[2] ? `<div class="small">${x[2]}</div>` : ""}
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function progressBar(n) {
+  const p = Math.min(n / 12, 1);
+  const cls = p < 0.5 ? "red" : p < 1 ? "orange" : "green";
+
+  return `
+    <div class="progress">
+      <div class="progbar ${cls}" style="width:${p * 100}%">
+        ${Math.round((n / 12) * 100)}%
+      </div>
+    </div>
+  `;
+}
+
+function pie(counts, colors = ratingColors, size = 180) {
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+
+  if (!total) {
+    return `<div class="small">No observations.</div>`;
+  }
+
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = size * 0.42;
+  let start = -Math.PI / 2;
+  let paths = "";
+
+  Object.entries(counts).forEach(([k, v]) => {
+    if (!v) return;
+
+    const ang = v / total * 2 * Math.PI;
+    const end = start + ang;
+    const large = ang > Math.PI ? 1 : 0;
+
+    const x1 = cx + r * Math.cos(start);
+    const y1 = cy + r * Math.sin(start);
+    const x2 = cx + r * Math.cos(end);
+    const y2 = cy + r * Math.sin(end);
+
+    paths += `
+      <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z"
+            fill="${colors[k] || "#777"}"></path>
+    `;
+
+    start = end;
+  });
+
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      ${paths}
+      <circle cx="${cx}" cy="${cy}" r="${r * 0.45}" fill="white"></circle>
+      <text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="18" font-weight="bold">${total}</text>
+      <text x="${cx}" y="${cy + 15}" text-anchor="middle" font-size="11" fill="#6b7280">obs</text>
+    </svg>
+  `;
+}
+
+function ratingTable(counts) {
+  const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+
+  return `
+    <table>
+      <tr>
+        <th>Rating</th>
+        <th>Obs</th>
+        <th>%</th>
+      </tr>
+      ${CONFIG.ratingsAll.map(r => `
+        <tr>
+          <td><span class="legendDot" style="background:${ratingColors[r]}"></span>${r}</td>
+          <td>${counts[r] || 0}</td>
+          <td>${pct((counts[r] || 0) / total, 1)}</td>
+        </tr>
+      `).join("")}
+    </table>
+  `;
+}
+
+function genericCountTable(counts, colors) {
+  const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+
+  return `
+    <table>
+      <tr>
+        <th>Category</th>
+        <th>Count</th>
+        <th>%</th>
+      </tr>
+      ${Object.keys(counts).map(k => `
+        <tr>
+          <td><span class="legendDot" style="background:${colors[k] || "#777"}"></span>${k}</td>
+          <td>${counts[k] || 0}</td>
+          <td>${pct((counts[k] || 0) / total, 1)}</td>
+        </tr>
+      `).join("")}
+    </table>
+  `;
+}
+
+function stacked(label, counts) {
+  const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+
+  return `
+    <b>${label}</b>
+    <div class="stack">
+      ${CONFIG.ratingsAll.map(r => {
+        const w = (counts[r] || 0) / total * 100;
+        if (!w) return "";
+        return `
+          <div class="seg"
+               style="width:${w}%;background:${ratingColors[r]}"
+               title="${r}: ${counts[r]}">
+            ${w > 9 ? r : ""}
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function barChart(rows, color) {
+  const max = Math.max(...rows.map(r => r.value), 1);
+
+  return rows.map(r => `
+    <div class="barrow">
+      <div>${escapeHtml(r.label)}</div>
+      <div class="barbg">
+        <div class="barfill" style="width:${r.value / max * 100}%;background:${color}"></div>
+      </div>
+      <div>${pct(r.value, 0)}</div>
+    </div>
+  `).join("");
+}
+
+function traineeRows(ds) {
+  const trainees = uniq(ds.map(d => d.Trainee));
+
+  return trainees.map(t => {
+    const sub = ds.filter(d => d.Trainee === t);
+    const cnt = sub.length;
+    const counts = countRatings(sub);
+    const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+    const nd = ((counts.Novice || 0) + (counts.Developing || 0)) / total;
+    const ce = ((counts.Competent || 0) + (counts.Excellence || 0)) / total;
+    const misses = sub.filter(d => +d["Documented Miss (1/0)"]).length;
+    const mods = uniq(sub.flatMap(d => splitMods(d.Modality))).join("; ");
+
+    return `
+      <tr>
+        <td>${escapeHtml(t)}</td>
+        <td>${cnt}</td>
+        <td>${progressBar(cnt)}</td>
+        <td>${pct(nd, 1)}</td>
+        <td>${pct(ce, 1)}</td>
+        <td>${fmt(avg(scoreVals(sub)), 2)}</td>
+        <td>${misses}</td>
+        <td>${pct(misses / (cnt || 1), 1)}</td>
+        <td>${escapeHtml(uniq(sub.map(d => d["Rotation / Service"])).join("; "))}</td>
+        <td>${escapeHtml(mods)}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function categoryStats(ds, cats, type) {
+  return cats.map(cat => {
+    let sub;
+
+    if (type === "modality") {
+      sub = ds.filter(d => splitMods(d.Modality).includes(cat));
+    } else {
+      sub = ds.filter(d => d["Rotation / Service"] === cat);
+    }
+
+    const counts = countRatings(sub);
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    const nd = ((counts.Novice || 0) + (counts.Developing || 0)) / (total || 1);
+    const ce = ((counts.Competent || 0) + (counts.Excellence || 0)) / (total || 1);
+    const misses = sub.filter(d => +d["Documented Miss (1/0)"]).length;
+
+    return {
+      label: cat,
+      forms: sub.length,
+      obs: total,
+      avgScore: avg(scoreVals(sub)),
+      nd,
+      ce,
+      misses,
+      missRate: misses / (sub.length || 1)
+    };
+  });
+}
+
+function trendTable(stats) {
+  return `
+    <table>
+      <tr>
+        <th>Category</th>
+        <th>Forms</th>
+        <th>Rating obs</th>
+        <th>Novice/Developing</th>
+        <th>Competent/Excellence</th>
+        <th>Avg score</th>
+        <th>Miss forms</th>
+        <th>Miss rate</th>
+      </tr>
+      ${stats.map(s => `
+        <tr>
+          <td>${escapeHtml(s.label)}</td>
+          <td>${s.forms}</td>
+          <td>${s.obs}</td>
+          <td>${pct(s.nd, 1)}</td>
+          <td>${pct(s.ce, 1)}</td>
+          <td>${fmt(s.avgScore, 2)}</td>
+          <td>${s.misses}</td>
+          <td>${pct(s.missRate, 1)}</td>
+        </tr>
+      `).join("")}
+    </table>
+  `;
+}
+
+function commentsTable(ds) {
+  return `
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Trainee</th>
+        <th>Faculty</th>
+        <th>Rotation</th>
+        <th>Modality</th>
+        <th>Body region</th>
+        <th>Miss flag</th>
+        <th>Miss / issue comment</th>
+        <th>Reflection / action plan</th>
+      </tr>
+      ${ds.map(d => `
+        <tr>
+          <td>${escapeHtml(d["Submission Date"])}</td>
+          <td>${escapeHtml(d.Trainee)}</td>
+          <td>${escapeHtml(d["Faculty Assessor"])}</td>
+          <td>${escapeHtml(d["Rotation / Service"])}</td>
+          <td>${escapeHtml(d.Modality)}</td>
+          <td>${escapeHtml(d["Body Region"])}</td>
+          <td class="${+d["Documented Miss (1/0)"] ? "miss" : "ok"}">${escapeHtml(d["Critical Miss Flag"])}</td>
+          <td>${escapeHtml(d["Critical Miss / Issue Comment"] || "")}</td>
+          <td>${escapeHtml(d["Reflection / Action Plan"] || "")}</td>
+        </tr>
+      `).join("")}
+    </table>
+  `;
+}
+
+function renderTrainee() {
+  const ds = currentData();
+  const all = currentData(true);
+  const sel = selected("trainee");
+  const counts = countRatings(ds);
+
+  if (sel === "All") {
+    const trainees = uniq(ds.map(d => d.Trainee));
+    const misses = ds.filter(d => +d["Documented Miss (1/0)"]).length;
+
+    document.getElementById("trainee").innerHTML =
+      cards([
+        ["Total trainees", trainees.length],
+        ["Total assessments", ds.length],
+        ["Average forms completed", fmt(ds.length / (trainees.length || 1), 1), "Expected target: 12"],
+        ["Documented misses", misses, `${pct(misses / (ds.length || 1), 1)} of forms`],
+        ["Average score", fmt(avg(scoreVals(ds)), 2)],
+        ["Rating distribution", `${Object.values(counts).reduce((a, b) => a + b, 0)} obs`]
+      ]) +
+      `
+      <div class="grid2">
+        <div class="section">
+          <h3>All-trainee rating distribution</h3>
+          <div class="pieWrap">
+            ${pie(counts)}
+            ${ratingTable(counts)}
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Trainee summary</h3>
+          <table>
+            <tr>
+              <th>Trainee</th>
+              <th>Assessments</th>
+              <th>Progress toward 12</th>
+              <th>Novice/Developing %</th>
+              <th>Competent/Excellence %</th>
+              <th>Avg score</th>
+              <th>Miss forms</th>
+              <th>Miss rate</th>
+              <th>Rotations/Services</th>
+              <th>Modalities</th>
+            </tr>
+            ${traineeRows(ds)}
+          </table>
+        </div>
+      </div>
+      `;
+  } else {
+    const misses = ds.filter(d => +d["Documented Miss (1/0)"]).length;
+    const allTrainees = uniq(all.map(d => d.Trainee));
+    const allAvgForms = all.length / (allTrainees.length || 1);
+
+    const qavg = q => avg(ds.map(d => +d[q]).filter(x => x));
+    const qall = q => avg(all.map(d => +d[q]).filter(x => x));
+
+    document.getElementById("trainee").innerHTML =
+      cards([
+        ["Selected trainee", escapeHtml(sel)],
+        ["Assessment count", ds.length],
+        ["Progress toward 12", `${Math.round(ds.length / 12 * 100)}%`, `All-trainee avg completion: ${fmt(allAvgForms, 1)} forms`],
+        ["Documented misses", misses],
+        ["Average score", fmt(avg(scoreVals(ds)), 2), `Program: ${fmt(avg(scoreVals(all)), 2)}`]
+      ]) +
+      `
+      <div class="grid2">
+        <div class="section">
+          <h3>Trainee rating distribution</h3>
+          <div class="pieWrap">
+            ${pie(counts)}
+            ${ratingTable(counts)}
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Comparison to program overall</h3>
+          ${stacked("Program Overall", countRatings(all))}
+          ${stacked("Selected Trainee", counts)}
+
+          <h3>Primary question averages</h3>
+          <table>
+            <tr>
+              <th>Question</th>
+              <th>Selected trainee</th>
+              <th>Program overall</th>
+            </tr>
+            <tr>
+              <td>Findings relevant to clinical question</td>
+              <td>${fmt(qavg("Clinical Question Score"), 2)}</td>
+              <td>${fmt(qall("Clinical Question Score"), 2)}</td>
+            </tr>
+            <tr>
+              <td>Incidental findings</td>
+              <td>${fmt(qavg("Incidental Findings Score"), 2)}</td>
+              <td>${fmt(qall("Incidental Findings Score"), 2)}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Assessment contexts</h3>
+        <table>
+          <tr>
+            <th>Date</th>
+            <th>Faculty</th>
+            <th>Rotation/Service</th>
+            <th>Weeks</th>
+            <th>Modality</th>
+            <th>Avg score</th>
+            <th>Miss?</th>
+          </tr>
+          ${ds.map(d => `
+            <tr>
+              <td>${escapeHtml(d["Submission Date"])}</td>
+              <td>${escapeHtml(d["Faculty Assessor"])}</td>
+              <td>${escapeHtml(d["Rotation / Service"])}</td>
+              <td>${escapeHtml(d["Weeks Experience"])}</td>
+              <td>${escapeHtml(d.Modality)}</td>
+              <td>${fmt(+d["Average Score"], 2)}</td>
+              <td class="${+d["Documented Miss (1/0)"] ? "miss" : "ok"}">${escapeHtml(d["Critical Miss Flag"])}</td>
+            </tr>
+          `).join("")}
+        </table>
+      </div>
+
+      <div class="section">
+        <h3>Misses / comments / reflections</h3>
+        ${commentsTable(ds)}
+      </div>
+      `;
+  }
+}
+
+function renderProgram() {
+  const ds = currentData();
+  const counts = countRatings(ds);
+  const misses = ds.filter(d => +d["Documented Miss (1/0)"]).length;
+
+  document.getElementById("program").innerHTML =
+    cards([
+      ["Assessment count", ds.length],
+      ["Rating observation count", Object.values(counts).reduce((a, b) => a + b, 0)],
+      ["Documented misses", misses],
+      ["Program average score", fmt(avg(scoreVals(ds)), 2)]
+    ]) +
+    `
+    <div class="grid2">
+      <div class="section">
+        <h3>Program rating distribution</h3>
+        <div class="pieWrap">
+          ${pie(counts)}
+          ${ratingTable(counts)}
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Program averages by question</h3>
+        <table>
+          <tr>
+            <th>Question</th>
+            <th>Average</th>
+          </tr>
+          <tr>
+            <td>Findings relevant to clinical question</td>
+            <td>${fmt(avg(ds.map(d => +d["Clinical Question Score"]).filter(x => x)), 2)}</td>
+          </tr>
+          <tr>
+            <td>Incidental findings</td>
+            <td>${fmt(avg(ds.map(d => +d["Incidental Findings Score"]).filter(x => x)), 2)}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Trainee comparison table</h3>
+      <table>
+        <tr>
+          <th>Trainee</th>
+          <th>Assessments</th>
+          <th>Progress</th>
+          <th>Novice/Developing %</th>
+          <th>Competent/Excellence %</th>
+          <th>Avg score</th>
+          <th>Miss forms</th>
+          <th>Miss rate</th>
+          <th>Rotations/Services</th>
+          <th>Modalities</th>
+        </tr>
+        ${traineeRows(ds)}
+      </table>
+    </div>
+    `;
+}
+
+function renderRotation() {
+  const ds = currentData();
+  const stats = categoryStats(ds, CONFIG.rotationsAll, "rotation");
+
+  const weekStats = CONFIG.weeksAll.map(w => {
+    const sub = ds.filter(d => d["Weeks Experience"] === w);
+    return {
+      weeks: w,
+      forms: sub.length,
+      avgScore: avg(scoreVals(sub)),
+      missRate: sub.filter(d => +d["Documented Miss (1/0)"]).length / (sub.length || 1)
+    };
+  });
+
+  document.getElementById("rotation").innerHTML = `
+    <div class="section">
+      <h3>Novice / Developing Rates</h3>
+      ${barChart(stats.map(s => ({ label: s.label, value: s.nd })), "#d9534f")}
+    </div>
+
+    <div class="section">
+      <h3>Competent / Excellence Rates</h3>
+      ${barChart(stats.map(s => ({ label: s.label, value: s.ce })), "#2e8b57")}
+    </div>
+
+    <div class="section">
+      <h3>Rotation/service trend table</h3>
+      ${trendTable(stats)}
+    </div>
+
+    <div class="section">
+      <h3>Percentage of forms with documented critical miss</h3>
+      ${barChart(stats.map(s => ({ label: s.label, value: s.missRate })), "#e78ab0")}
+    </div>
+
+    <div class="section">
+      <h3>Experience pattern table by weeks of experience</h3>
+      <table>
+        <tr>
+          <th>Weeks</th>
+          <th>Forms</th>
+          <th>Avg score</th>
+          <th>Miss rate</th>
+        </tr>
+        ${weekStats.map(s => `
+          <tr>
+            <td>${escapeHtml(s.weeks)}</td>
+            <td>${s.forms}</td>
+            <td>${fmt(s.avgScore, 2)}</td>
+            <td>${pct(s.missRate, 1)}</td>
+          </tr>
+        `).join("")}
+      </table>
+    </div>
+  `;
+}
+
+function renderModality() {
+  const ds = currentData();
+  const stats = categoryStats(ds, CONFIG.modalitiesAll, "modality");
+
+  document.getElementById("modality").innerHTML = `
+    <div class="section">
+      <h3>Novice / Developing Rates</h3>
+      ${barChart(stats.map(s => ({ label: s.label, value: s.nd })), "#d9534f")}
+    </div>
+
+    <div class="section">
+      <h3>Competent / Excellence Rates</h3>
+      ${barChart(stats.map(s => ({ label: s.label, value: s.ce })), "#2e8b57")}
+    </div>
+
+    <div class="section">
+      <h3>Modality trend table</h3>
+      ${trendTable(stats)}
+    </div>
+
+    <div class="section">
+      <h3>Percentage of forms with documented critical miss</h3>
+      ${barChart(stats.map(s => ({ label: s.label, value: s.missRate })), "#e78ab0")}
+    </div>
+  `;
+}
+
+function topCluster(ds, field) {
+  const map = {};
+
+  ds.forEach(d => {
+    const vals = field === "Modality" ? splitMods(d.Modality) : [d[field]];
+    vals.forEach(v => {
+      if (v) map[v] = (map[v] || 0) + 1;
+    });
+  });
+
+  return Object.entries(map)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(x => `${escapeHtml(x[0])} (${x[1]})`)
+    .join(", ") || "None";
+}
+
+function renderComments() {
+  const ds = currentData();
+  const miss = ds.filter(d => +d["Documented Miss (1/0)"]);
+
+  const bodyCounts = {
+    "Body": 0,
+    "Neuro / Head & Neck": 0,
+    "Cardiothoracic": 0,
+    "Bones / MSK": 0,
+    "Nuclear Medicine / Molecular": 0,
+    "Other / Unclear": 0
+  };
+
+  miss.forEach(d => {
+    const br = d["Body Region"] || "Other / Unclear";
+    if (!bodyCounts.hasOwnProperty(br)) bodyCounts[br] = 0;
+    bodyCounts[br]++;
+  });
+
+  const examples = miss.slice(0, 5).map(d => `
+    <li>
+      <b>${escapeHtml(d.Trainee)}</b>
+      (${escapeHtml(d["Rotation / Service"])}, ${escapeHtml(d.Modality)}):
+      “${escapeHtml(d["Critical Miss / Issue Comment"])}”
+      ${d["Reflection / Action Plan"] ? `— reflection: “${escapeHtml(d["Reflection / Action Plan"])}”` : ""}
+    </li>
+  `).join("") || "<li>No documented miss examples in the filtered data.</li>";
+
+  document.getElementById("comments").innerHTML = `
+    <div class="section summary">
+      <h3>Executive summary for leadership</h3>
+      <p>
+        Filtered dataset includes <b>${ds.length}</b> submitted WPBA forms and
+        <b>${scoreVals(ds).length}</b> scorable rating observations.
+        The documented miss/issue count is <b>${miss.length}</b>
+        (${pct(miss.length / (ds.length || 1), 1)} of forms), with an average score of
+        <b>${fmt(avg(scoreVals(ds)), 2)}</b>.
+      </p>
+
+      <p>
+        <b>Documented miss clustering:</b>
+        body-region clustering: ${topCluster(miss, "Body Region")}.
+        Rotation/service clustering: ${topCluster(miss, "Rotation / Service")}.
+        Modality clustering: ${topCluster(miss, "Modality")}.
+      </p>
+
+      <p>
+        <b>Narrative feedback themes:</b>
+        recurring reflections often emphasize search-pattern refinement, deliberate review,
+        reducing satisfaction-of-search errors, and increasing focused case exposure.
+      </p>
+
+      <p><b>Representative examples:</b></p>
+      <ul>${examples}</ul>
+    </div>
+
+    <div class="grid2">
+      <div class="section">
+        <h3>Documented misses by body region</h3>
+        <div class="pieWrap">
+          ${pie(bodyCounts, bodyColors)}
+          ${genericCountTable(bodyCounts, bodyColors)}
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Body-region counts</h3>
+        ${genericCountTable(bodyCounts, bodyColors)}
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Full comments/reflections tracker</h3>
+      ${commentsTable(ds)}
+    </div>
+  `;
+}
+
+function renderEmptyState() {
+  const msg = `
+    <div class="section">
+      <h2>No spreadsheet loaded</h2>
+      <p>
+        Drag and drop the Microsoft Forms WPBA spreadsheet above to populate the dashboard.
+      </p>
+      <p class="small">
+        The spreadsheet is processed locally in the browser. It is not uploaded by this static page.
+      </p>
+    </div>
+  `;
+
+  ["trainee", "program", "rotation", "modality", "comments"].forEach(id => {
+    document.getElementById(id).innerHTML = msg;
+  });
+}
+
+function renderAll() {
+  if (!assessments.length) {
+    renderEmptyState();
+    return;
+  }
+
+  renderTrainee();
+  renderProgram();
+  renderRotation();
+  renderModality();
+  renderComments();
+}
+
+function loadDemoData() {
+  assessments = [...demoAssessments];
+  rawFormRows = [];
+  rebuildFilterOptions();
+  renderAll();
+  setStatus("Loaded small synthetic demo data.");
+}
+
+function clearData() {
+  assessments = [];
+  rawFormRows = [];
+  initFilters();
+  renderEmptyState();
+  setStatus("No spreadsheet loaded.");
+}
+
+function makeAssessmentRows() {
+  return assessments.map(d => ({ ...d }));
+}
+
+function makeLongRows() {
+  const rows = [];
+
+  assessments.forEach(d => {
+    const mods = splitMods(d.Modality);
+    const modalities = mods.length ? mods : ["Unknown"];
+
+    const qs = [
+      {
+        question: "Findings relevant to clinical question",
+        rating: d["Clinical Question Rating"],
+        score: d["Clinical Question Score"]
+      },
+      {
+        question: "Incidental findings",
+        rating: d["Incidental Findings Rating"],
+        score: d["Incidental Findings Score"]
+      }
+    ];
+
+    modalities.forEach(mod => {
+      qs.forEach(q => {
+        const band =
+          q.rating === "Novice" || q.rating === "Developing"
+            ? "Novice/Developing"
+            : q.rating === "Competent" || q.rating === "Excellence"
+              ? "Competent/Excellence"
+              : q.rating;
+
+        rows.push({
+          "Assessment ID": d["Assessment ID"],
+          "Trainee": d["Trainee"],
+          "Faculty Assessor": d["Faculty Assessor"],
+          "Rotation / Service": d["Rotation / Service"],
+          "Weeks Experience": d["Weeks Experience"],
+          "Weeks (Midpoint)": d["Weeks (Midpoint)"],
+          "Modality": mod,
+          "Academic Year": d["Academic Year"],
+          "Submission Date": d["Submission Date"],
+          "Submission Month": d["Submission Month"],
+          "Question": q.question,
+          "Rating": q.rating,
+          "Score (1-4)": q.score,
+          "Rating Band": band,
+          "Critical Miss Flag": d["Critical Miss Flag"],
+          "Documented Miss (1/0)": d["Documented Miss (1/0)"],
+          "Body Region": d["Body Region"],
+          "Critical Miss / Issue Comment": d["Critical Miss / Issue Comment"],
+          "Reflection / Action Plan": d["Reflection / Action Plan"]
+        });
+      });
+    });
+  });
+
+  return rows;
+}
+
+function downloadAssessmentCSV() {
+  if (!assessments.length) {
+    alert("No data loaded.");
+    return;
+  }
+
+  downloadCSV(makeAssessmentRows(), "wpba_assessment.csv");
+}
+
+function downloadLongCSV() {
+  if (!assessments.length) {
+    alert("No data loaded.");
+    return;
+  }
+
+  downloadCSV(makeLongRows(), "wpba_long.csv");
+}
+
+function downloadCSV(rows, filename) {
+  if (!rows.length) return;
+
+  const headers = Object.keys(rows[0]);
+
+  const csv = [
+    headers.join(","),
+    ...rows.map(row => headers.map(h => csvEscape(row[h])).join(","))
+  ].join("\r\n");
+
+  const blob = new Blob([csv], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+}
+
+function csvEscape(value) {
+  const s = String(value ?? "");
+  return `"${s.replace(/"/g, '""')}"`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+setupTabs();
+setupFileUpload();
+initFilters();
+renderEmptyState();
+</script>
+</body>
+</html>
